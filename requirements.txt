@@ -1,0 +1,8 @@
+Pillow
+django-crispy-forms
+crispy-bootstrat5
+django-crispy-forms
+djangorestframework
+markdown
+django-filter
+rest-framework-generic-relations
