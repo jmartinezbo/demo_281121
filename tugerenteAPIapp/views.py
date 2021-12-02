@@ -1,7 +1,7 @@
 import json
 
 from django.views import View
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core import serializers
 
 from .models import Sale
@@ -26,11 +26,13 @@ from .serializers import UnitMeasureSerializer
 
 class SaleView(View):
     def get(self, request, id_item):
-        
+        """devolvemos un objeto sale con todas sus relaciones"""
         res = self.get_sale(id_item)
-        return HttpResponse(json.dumps([res]))
+        # return HttpResponse(json.dumps([res]))
+        return JsonResponse(res)
 
     def get_sale(self, id_item):
+        "return: diccionario del objeto ventas con formato serializado de sus relaciones"
         obj = Sale.objects.get(pk=id_item)
         res = SaleSerializer(obj).data
         if res:
@@ -40,12 +42,15 @@ class SaleView(View):
         return res
 
     def get_customer(self, customer_id):
+        "return: diccionario del objeto customer"
         return CustomerSerializer(Customer.objects.get(pk=customer_id)).data
 
     def get_payment(self, payment_id):
+        "return: diccionario del objeto payments method"
         return PaymentMethodSerializer(PaymentMethod.objects.get(pk=payment_id)).data
 
     def get_detail(self, sale_id):
+        "return: diccionario del objeto sale detail con formato serializado de sus relaciones"
         res = []
         for obj in SaleDetail.objects.filter(sale=sale_id):
             dict_res = SaleDetailSerializer(obj).data
@@ -56,6 +61,7 @@ class SaleView(View):
         return res
 
     def get_product(self, product_id):
+        "return: diccionario del objeto product con formato serializado de sus relaciones"
         res = ProductSerializer(Product.objects.get(pk=product_id)).data
         if res:
             res["category"] = self.get_category(res["category"])
@@ -64,28 +70,37 @@ class SaleView(View):
         return res 
 
     def get_category(self, category_id):
+        "return: diccionario del objeto category"
         return ProductCategorySerializer(ProductCategory.objects.get(pk=category_id)).data
 
     def get_subcategory(self, subcategory_id):
+        "return: diccionario del objeto sub catygory"
         return ProductSubcategorySerializer(ProductSubcategory.objects.get(pk=subcategory_id)).data
     
     def get_unitmeasure(self, unitmeasure_id):
+        "return: diccionario del objeto unit of measure"
         return UnitMeasureSerializer(UnitMeasure.objects.get(pk=unitmeasure_id)).data
 
 class ListSaleView(View):
     def get(self, request):
+        """devolvemos un queryset de todo el pool del modelo sale """
         res = []
         list_obj = Sale.objects.all()
         if list_obj:
             for obj in list_obj:
-                res.append(json.loads(SaleView.as_view()(self.request, obj.id).getvalue())[0])
-        return HttpResponse(json.dumps(res))
+                # res.append(json.loads(SaleView.as_view()(self.request, obj.id).getvalue())[0])
+                res.append(json.loads(SaleView.as_view()(self.request, obj.id).getvalue()))
+        # return HttpResponse(json.dumps(res))
+        return JsonResponse(res, safe=False)
 
 class ListSaleTopView(View):
     def get(self, request, top):
+        """devolvemos un queryset de todo el pool del modelo sale con un parametro maximo"""
         res = []
         list_obj = Sale.objects.all()[:top]
         if list_obj:
             for obj in list_obj:
-                res.append(json.loads(SaleView.as_view()(self.request, obj.id).getvalue())[0])
-        return HttpResponse(json.dumps(res))
+                # res.append(json.loads(SaleView.as_view()(self.request, obj.id).getvalue())[0])
+                res.append(json.loads(SaleView.as_view()(self.request, obj.id).getvalue()))
+        # return HttpResponse(json.dumps(res))
+        return JsonResponse(res, safe=False)
